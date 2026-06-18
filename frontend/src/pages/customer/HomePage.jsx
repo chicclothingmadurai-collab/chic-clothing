@@ -25,7 +25,7 @@ export default function HomePage() {
       <section className="relative bg-black text-white min-h-[90vh] flex items-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black opacity-90" />
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-12 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 w-full">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -39,7 +39,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-6xl md:text-8xl font-bold tracking-tight mb-6 leading-[0.95]"
+            className="text-4xl sm:text-5xl md:text-8xl font-bold tracking-tight mb-6 leading-[0.95]"
           >
             CHIC
             <br />
@@ -50,7 +50,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-lg md:text-xl text-gray-400 mb-10 max-w-md"
+            className="text-base sm:text-lg md:text-xl text-gray-400 mb-10 max-w-md"
           >
             Premium branded t-shirts. Curated from the world's leading fashion
             houses.
@@ -60,7 +60,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
-            className="flex gap-4"
+            className="flex flex-col sm:flex-row gap-4"
           >
             <Link
               to="/products"
@@ -93,7 +93,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
           {[
             "Nike",
             "Adidas",
@@ -135,7 +135,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {products.map((product) => (
             <motion.div
               key={product._id}
@@ -144,7 +144,7 @@ export default function HomePage() {
               className="group cursor-pointer"
             >
               <Link to={`/products/${product._id}`}>
-                <div className="relative h-80 bg-gray-100 overflow-hidden">
+                <div className="relative h-56 sm:h-72 md:h-80 bg-gray-100 overflow-hidden">
                   <img
                     src={
                       product.images?.[0]?.url ||
