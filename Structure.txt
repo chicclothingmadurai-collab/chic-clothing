@@ -1,0 +1,117 @@
+CHIC-CLOTHING/
+│
+├── backend/
+│   │
+│   ├── config/
+│   │   ├── db.js
+│   │   └── cloudinary.js
+│   │
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── productController.js
+│   │   ├── cartController.js
+│   │   ├── orderController.js
+│   │   ├── wishlistController.js
+│   │   ├── reviewController.js
+│   │   ├── couponController.js
+│   │   └── adminController.js
+│   │
+│   ├── middleware/
+│   │   ├── auth.js
+│   │   └── admin.js
+│   │
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Product.js
+│   │   ├── Order.js
+│   │   ├── Cart.js
+│   │   ├── Wishlist.js
+│   │   ├── Review.js
+│   │   ├── Coupon.js
+│   │   ├── Payment.js
+│   │   └── Notification.js
+│   │
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── products.js
+│   │   ├── cart.js
+│   │   ├── wishlist.js
+│   │   ├── orders.js
+│   │   ├── reviews.js
+│   │   ├── coupons.js
+│   │   └── admin.js
+│   │
+│   ├── seed.js
+│   ├── server.js
+│   ├── package.json
+│   └── .env
+│
+└── frontend/
+    │
+    ├── public/
+    │
+    ├── src/
+    │   │
+    │   ├── api/
+    │   │   └── api.js
+    │   │
+    │   ├── assets/
+    │   │   ├── images/
+    │   │   └── logos/
+    │   │
+    │   ├── components/
+    │   │   ├── Navbar.jsx
+    │   │   ├── Footer.jsx
+    │   │   ├── ProductCard.jsx
+    │   │   ├── LoadingSpinner.jsx
+    │   │   ├── ProductSkeleton.jsx
+    │   │   ├── SearchBar.jsx
+    │   │   ├── BrandSlider.jsx
+    │   │   ├── HeroBanner.jsx
+    │   │   └── ReviewCard.jsx
+    │   │
+    │   ├── context/
+    │   │   ├── AuthContext.jsx
+    │   │   ├── CartContext.jsx
+    │   │   └── ThemeContext.jsx
+    │   │
+    │   ├── layouts/
+    │   │   ├── MainLayout.jsx
+    │   │   └── AdminLayout.jsx
+    │   │
+    │   ├── pages/
+    │   │   │
+    │   │   ├── customer/
+    │   │   │   ├── HomePage.jsx
+    │   │   │   ├── LoginPage.jsx
+    │   │   │   ├── RegisterPage.jsx
+    │   │   │   ├── ProductsPage.jsx
+    │   │   │   ├── ProductDetailsPage.jsx
+    │   │   │   ├── CartPage.jsx
+    │   │   │   ├── WishlistPage.jsx
+    │   │   │   ├── CheckoutPage.jsx
+    │   │   │   ├── PaymentPage.jsx
+    │   │   │   ├── OrderSuccessPage.jsx
+    │   │   │   ├── ProfilePage.jsx
+    │   │   │   ├── MyOrdersPage.jsx
+    │   │   │   └── ContactPage.jsx
+    │   │   │
+    │   │   └── admin/
+    │   │       ├── AdminLogin.jsx
+    │   │       ├── Dashboard.jsx
+    │   │       ├── ProductManagement.jsx
+    │   │       ├── UserManagement.jsx
+    │   │       ├── OrderManagement.jsx
+    │   │       ├── CouponManagement.jsx
+    │   │       └── Analytics.jsx
+    │   │
+    │   ├── App.jsx
+    │   ├── App.css
+    │   ├── main.jsx
+    │   └── index.css
+    │
+    ├── package.json
+    ├── vite.config.js
+    ├── tailwind.config.js
+    ├── postcss.config.js
+    └── index.html
