@@ -113,4 +113,4 @@ exports.verifyPayment = async (req, res) => {
       message: err.message,
     });
   }
-};;
+};

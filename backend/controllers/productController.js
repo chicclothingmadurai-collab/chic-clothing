@@ -14,7 +14,11 @@ const getProducts = async (req, res) => {
 
     // Search
     if (search) {
-      query.$text = { $search: search };
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { brand: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+      ];
     }
 
     // Filters
@@ -112,6 +116,12 @@ const createProduct = async (req, res) => {
       }));
     }
 
+    // If finalPrice is not provided, compute it from price and discount
+    if (productData.finalPrice === undefined && productData.price !== undefined) {
+      const discount = productData.discount || 0;
+      productData.finalPrice = Math.round(productData.price * (1 - discount / 100));
+    }
+
     const product = await Product.create(productData);
     res.status(201).json({ success: true, message: 'Product created!', product });
   } catch (error) {
@@ -124,27 +134,52 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const productData = req.body;
+    console.log('📥 Incoming update data:', productData);
 
+    // Parse JSON strings if needed
     if (typeof productData.colors === 'string') productData.colors = JSON.parse(productData.colors);
     if (typeof productData.sizes === 'string') productData.sizes = JSON.parse(productData.sizes);
     if (typeof productData.tags === 'string') productData.tags = JSON.parse(productData.tags);
 
+    // Handle new images
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map(file => ({ url: file.path, public_id: file.filename }));
       const existing = await Product.findById(req.params.id);
       productData.images = [...(existing.images || []), ...newImages];
     }
 
-    // Recalculate finalPrice
-    if (productData.price && productData.discount !== undefined) {
-      productData.finalPrice = Math.round(productData.price * (1 - productData.discount / 100));
+    // --- Fetch existing product ---
+    const existingProduct = await Product.findById(req.params.id);
+    if (!existingProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
-    const product = await Product.findByIdAndUpdate(req.params.id, productData, { new: true, runValidators: true });
-    if (!product) return res.status(404).json({ success: false, message: 'Product not found.' });
+    // --- Determine price and discount (use provided or fallback) ---
+    const price = productData.price !== undefined
+      ? Number(productData.price)
+      : existingProduct.price;
+
+    const discount = productData.discount !== undefined
+      ? Number(productData.discount)
+      : existingProduct.discount;
+
+    // --- Recalculate finalPrice (always) ---
+    productData.finalPrice = Math.round(price * (1 - discount / 100));
+
+    console.log(`🔄 Price: ${price}, Discount: ${discount}% → Final: ${productData.finalPrice}`);
+
+    // --- Update the product ---
+    const product = await Product.findByIdAndUpdate(
+      req.params.id,
+      productData,
+      { new: true, runValidators: true }
+    );
+
+    console.log('✅ Updated product:', product);
 
     res.json({ success: true, message: 'Product updated!', product });
   } catch (error) {
+    console.error('❌ Update error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -186,4 +221,12 @@ const getRelatedProducts = async (req, res) => {
   }
 };
 
-module.exports = { getProducts, getProduct, getSearchSuggestions, createProduct, updateProduct, deleteProduct, getRelatedProducts };
+module.exports = {
+  getProducts,
+  getProduct,
+  getSearchSuggestions,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getRelatedProducts
+};

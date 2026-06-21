@@ -1,15 +1,14 @@
+const sendEmail = require("../utils/sendEmail");
 const Order = require("../models/Order");
 const { Cart } = require("../models");
 const Product = require("../models/Product");
 const User = require("../models/User");
+
 const createOrder = async (req, res) => {
   try {
-    console.log("ORDER REQUEST:");
+    
     console.log(req.body);
 
-    
-
-  
     const {
       addressId,
       paymentMethod,
@@ -19,49 +18,66 @@ const createOrder = async (req, res) => {
 
     const user = await User.findById(req.user._id);
 
-console.log("========== USER ==========");
-console.log(user);
+    
+    console.log(user);
 
-if (!user) {
-  return res.status(404).json({
-    success: false,
-    message: "User not found",
-  });
-}
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
-const cart = await Cart.findOne({
-  user: req.user._id,
-}).populate("items.product");
+    const cart = await Cart.findOne({
+      user: req.user._id,
+    }).populate("items.product");
 
-console.log("========== CART ==========");
-console.log(cart);
+    
+    console.log(cart);
 
-if (!cart || cart.items.length === 0) {
-  return res.status(400).json({
-    success: false,
-    message: "Cart is empty",
-  });
-}
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Cart is empty",
+      });
+    }
 
-console.log("========== ADDRESS ID ==========");
-console.log(addressId);
+    
+    console.log(addressId);
 
-console.log("========== USER ADDRESSES ==========");
-console.log(user.addresses);
+    console.log("========== USER ADDRESSES ==========");
+    console.log(user.addresses);
 
-const selectedAddress =
-  user.addresses?.id(addressId);
+    const selectedAddress = user.addresses?.id(addressId);
 
-console.log("========== SELECTED ADDRESS ==========");
-console.log(selectedAddress);
+    console.log("========== SELECTED ADDRESS ==========");
+    console.log(selectedAddress);
 
-if (!selectedAddress) {
-  return res.status(400).json({
-    success: false,
-    message: "Address not found",
-  });
-}
+    if (!selectedAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "Address not found",
+      });
+    }
 
+    // ---------- STOCK VALIDATION BEFORE ORDER CREATION ----------
+    for (const item of cart.items) {
+      const product = await Product.findById(item.product._id);
+      if (!product) {
+        return res.status(400).json({
+          success: false,
+          message: `Product not found: ${item.product._id}`,
+        });
+      }
+      if (product.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `${product.name} is out of stock (only ${product.stock} available).`,
+        });
+      }
+    }
+
+    // ---------- BUILD ORDER ITEMS ----------
     let itemsTotal = 0;
 
     const orderItems = cart.items.map((item) => {
@@ -76,8 +92,7 @@ if (!selectedAddress) {
         product: item.product._id,
         name: item.product.name,
         brand: item.product.brand,
-        image:
-          item.product.images?.[0]?.url || "",
+        image: item.product.images?.[0]?.url || "",
         size: item.size,
         color: item.color,
         quantity: item.quantity,
@@ -86,86 +101,140 @@ if (!selectedAddress) {
       };
     });
 
-    const deliveryCharge =
-      itemsTotal > 999 ? 0 : 99;
+    const deliveryCharge = 0;
+    const couponDiscount = 0;
+    const grandTotal = itemsTotal;
 
-    const couponDiscount =
-      cart.couponDiscount || 0;
-
-    const grandTotal =
-      itemsTotal +
-      deliveryCharge -
-      couponDiscount;
-
+    // ---------- CREATE ORDER ----------
     const order = await Order.create({
       user: req.user._id,
-
       items: orderItems,
-
       shippingAddress: {
-        fullName:
-          selectedAddress.fullName,
-
-        mobile:
-          selectedAddress.phone,
-
+        fullName: selectedAddress.fullName,
+        mobile: selectedAddress.mobile,
         email: user.email,
-
-        addressLine:
-          selectedAddress.line1 +
-          " " +
-          (selectedAddress.line2 || ""),
-
+        addressLine: selectedAddress.addressLine,
         city: selectedAddress.city,
-
         state: selectedAddress.state,
-
-        pincode:
-          selectedAddress.zip,
+        pincode: selectedAddress.pincode,
       },
-
-      paymentMethod:
-        paymentMethod || "UPI",
-
+      paymentMethod: paymentMethod || "UPI",
       paymentStatus: "Paid",
-
       razorpayPaymentId,
-
       razorpayOrderId,
-
-      transactionId:
-        razorpayPaymentId,
-
+      transactionId: razorpayPaymentId,
       itemsTotal,
-
       deliveryCharge,
-
       couponDiscount,
-
-      couponCode:
-        cart.couponCode || "",
-
+      couponCode: cart.couponCode || "",
       grandTotal,
-
-      estimatedDelivery:
-        new Date(
-          Date.now() +
-            7 *
-              24 *
-              60 *
-              60 *
-              1000
-        ),
-
+      orderStatus: "Processing",
+      estimatedDelivery: new Date(
+        Date.now() + 7 * 24 * 60 * 60 * 1000
+      ),
       statusHistory: [
         {
-          status: "Pending",
-          note:
-            "Order placed successfully",
+          status: "Processing",
+          note: "Order placed successfully",
         },
       ],
     });
 
+    // ---------- CUSTOMER EMAIL (with product details and delivery address) ----------
+    const productsHtml = order.items
+      .map(
+        (item) => `
+          <li>
+            ${item.name} - Size: ${item.size}
+            × ${item.quantity}
+            - ₹${item.finalPrice}
+          </li>
+        `
+      )
+      .join("");
+
+    const customerHtml = `
+      <h2>Thank You for Shopping with CHIC Clothing ❤️</h2>
+      <p>Your order has been confirmed successfully.</p>
+      <p><strong>Order ID:</strong> ${order.orderId}</p>
+      <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+      <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+      <h3>Order Summary</h3>
+      <ul>${productsHtml}</ul>
+      <p><strong>Total Paid:</strong> ₹${order.grandTotal}</p>
+      <h3>Delivery Address</h3>
+      <p>
+        ${order.shippingAddress.fullName}<br>
+        ${order.shippingAddress.addressLine}<br>
+        ${order.shippingAddress.city}<br>
+        ${order.shippingAddress.state}<br>
+        PIN: ${order.shippingAddress.pincode}
+      </p>
+      <p>Expected delivery within 5-7 business days.</p>
+      <p>
+        Thank you for buying from CHIC Clothing.<br>
+        Your order will be delivered soon.
+      </p>
+    `;
+
+    try {
+      await sendEmail(
+  "chicclothing2026@gmail.com",
+  "Order Confirmed - CHIC Clothing",
+  customerHtml
+);
+      console.log("Email sent (customer):", order.shippingAddress.email);
+    } catch (err) {
+      console.error("Email error (customer):", err);
+    }
+
+    // ---------- ADMIN EMAIL (complete order details) ----------
+    const adminProducts = order.items
+      .map(
+        (item) => `
+          <li>
+            ${item.name}
+            | Size: ${item.size}
+            | Qty: ${item.quantity}
+            | ₹${item.finalPrice}
+          </li>
+        `
+      )
+      .join("");
+
+    const adminHtml = `
+      <h2>🛒 NEW ORDER RECEIVED</h2>
+      <p><strong>Order ID:</strong> ${order.orderId}</p>
+      <p><strong>Customer:</strong> ${order.shippingAddress.fullName}</p>
+      <p><strong>Email:</strong> ${order.shippingAddress.email}</p>
+      <p><strong>Mobile:</strong> ${order.shippingAddress.mobile}</p>
+      <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+      <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+      <p><strong>Razorpay Payment ID:</strong> ${order.razorpayPaymentId}</p>
+      <p><strong>Total Amount:</strong> ₹${order.grandTotal}</p>
+      <h3>Products</h3>
+      <ul>${adminProducts}</ul>
+      <h3>Delivery Address</h3>
+      <p>
+        ${order.shippingAddress.addressLine}<br>
+        ${order.shippingAddress.city}<br>
+        ${order.shippingAddress.state}<br>
+        PIN: ${order.shippingAddress.pincode}
+      </p>
+    `;
+
+    try {
+      await sendEmail(
+  "chicclothing2026@gmail.com",
+  "NEW ORDER RECEIVED - CHIC Clothing",
+  adminHtml
+);
+      console.log("Email sent (admin)");
+    } catch (err) {
+      console.error("Email error (admin):", err);
+    }
+
+    // ---------- UPDATE STOCK (safe because we already validated) ----------
     for (const item of cart.items) {
       await Product.findByIdAndUpdate(
         item.product._id,
@@ -178,21 +247,19 @@ if (!selectedAddress) {
       );
     }
 
+    // ---------- CLEAR CART ----------
     cart.items = [];
     cart.couponCode = "";
     cart.couponDiscount = 0;
-
     await cart.save();
 
     res.status(201).json({
       success: true,
-      message:
-        "Order placed successfully",
+      message: "Order placed successfully",
       order,
     });
   } catch (error) {
     console.error(error);
-
     res.status(500).json({
       success: false,
       message: error.message,
@@ -200,19 +267,13 @@ if (!selectedAddress) {
   }
 };
 
-const getUserOrders = async (
-  req,
-  res
-) => {
+const getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({
       user: req.user._id,
     })
       .sort({ createdAt: -1 })
-      .populate(
-        "items.product",
-        "name brand images"
-      );
+      .populate("items.product", "name brand images");
 
     res.json({
       success: true,
@@ -226,23 +287,11 @@ const getUserOrders = async (
   }
 };
 
-const getOrderById = async (
-  req,
-  res
-) => {
+const getOrderById = async (req, res) => {
   try {
-    const order =
-      await Order.findById(
-        req.params.id
-      )
-        .populate(
-          "user",
-          "name email"
-        )
-        .populate(
-          "items.product",
-          "name brand images"
-        );
+    const order = await Order.findById(req.params.id)
+      .populate("user", "name email")
+      .populate("items.product", "name brand images");
 
     if (!order) {
       return res.status(404).json({
@@ -252,8 +301,7 @@ const getOrderById = async (
     }
 
     if (
-      order.user._id.toString() !==
-        req.user._id.toString() &&
+      order.user._id.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
       return res.status(403).json({
@@ -274,15 +322,9 @@ const getOrderById = async (
   }
 };
 
-const cancelOrder = async (
-  req,
-  res
-) => {
+const cancelOrder = async (req, res) => {
   try {
-    const order =
-      await Order.findById(
-        req.params.id
-      );
+    const order = await Order.findById(req.params.id);
 
     if (!order) {
       return res.status(404).json({
@@ -291,59 +333,40 @@ const cancelOrder = async (
       });
     }
 
-    if (
-      order.user.toString() !==
-      req.user._id.toString()
-    ) {
+    if (order.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: "Not authorized",
       });
     }
 
-    if (
-      ![
-        "Pending",
-        "Processing",
-      ].includes(
-        order.orderStatus
-      )
-    ) {
+    if (!["Processing"].includes(order.orderStatus)) {
       return res.status(400).json({
         success: false,
-        message:
-          "Cannot cancel order now",
+        message: "Cannot cancel order now",
       });
     }
 
-    order.orderStatus =
-      "Cancelled";
-
+    order.orderStatus = "Cancelled";
     order.statusHistory.push({
       status: "Cancelled",
-      note:
-        "Cancelled by customer",
+      note: "Cancelled by customer",
     });
 
     await order.save();
 
     for (const item of order.items) {
-      await Product.findByIdAndUpdate(
-        item.product,
-        {
-          $inc: {
-            stock: item.quantity,
-            soldCount:
-              -item.quantity,
-          },
-        }
-      );
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: {
+          stock: item.quantity,
+          soldCount: -item.quantity,
+        },
+      });
     }
 
     res.json({
       success: true,
-      message:
-        "Order cancelled successfully",
+      message: "Order cancelled successfully",
       order,
     });
   } catch (error) {
