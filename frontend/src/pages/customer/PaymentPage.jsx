@@ -40,7 +40,7 @@ const PaymentPage = () => {
       if (!data.order || !data.order.id) {
         throw new Error("Invalid order data received from server.");
       }
-
+console.log("RAZORPAY KEY =", import.meta.env.VITE_RAZORPAY_KEY_ID);
       // 2. Configure Razorpay options
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -97,10 +97,11 @@ ${address?.zip || ""}
     await clearCart();
 
     navigate(`/order-success/${orderRes.data.order._id}`, {
-      state: {
-        paymentId: response.razorpay_payment_id,
-      },
-    });
+  state: {
+    order: orderRes.data.order,
+    paymentId: response.razorpay_payment_id,
+  },
+});
 
   } catch (err) {
     console.error(err);
@@ -118,7 +119,7 @@ ${address?.zip || ""}
         // handler is already defined below
       };
 
-     
+     console.log(options);
 const razorpay = new window.Razorpay(options);
 
       // 4. Open the Razorpay checkout

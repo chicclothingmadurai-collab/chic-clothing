@@ -95,12 +95,10 @@ export const CartProvider = ({ children }) => {
     0
   );
 
-  const deliveryCharge = itemsTotal > 999 ? 0 : 99;
+  const deliveryCharge = 0;
 
-  const grandTotal =
-    itemsTotal +
-    deliveryCharge -
-    (cart.couponDiscount || 0);
+
+const grandTotal = itemsTotal;
 
   return (
     <CartContext.Provider

@@ -11,7 +11,6 @@ import {
   SunIcon, MoonIcon, Bars3Icon, XMarkIcon, ChevronDownIcon
 } from '@heroicons/react/24/outline';
 
-const BRANDS = ['Nike', 'Adidas', 'Puma', 'Reebok', "Levi's", 'US Polo Assn.', 'Tommy Hilfiger', 'Calvin Klein', 'Jack & Jones', 'Allen Solly', 'Louis Philippe', 'Peter England', 'Van Heusen', 'H&M', 'Zara'];
 const CATEGORIES = ['Oversized', 'Polo', 'Round Neck', 'Printed', 'Plain', 'Sports', 'Casual', 'Premium Cotton'];
 
 export default function Navbar() {
@@ -69,54 +68,34 @@ export default function Navbar() {
     <>
       {/* Announcement bar */}
       <div className="bg-luxury-900 dark:bg-black text-white text-center py-2 text-xs tracking-widest font-medium">
-        FREE DELIVERY ON ORDERS ABOVE ₹999 &nbsp;|&nbsp; USE CODE <span className="text-gold-400">WELCOME20</span> FOR 20% OFF
+        FREE DELIVERY ON EVERY ORDER
       </div>
 
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 dark:bg-luxury-900/95 backdrop-blur-md shadow-lg' : 'bg-white dark:bg-luxury-900'} border-b border-luxury-100 dark:border-luxury-800`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
               <div className="relative">
-                <span className="font-display text-2xl font-bold tracking-[0.15em] text-luxury-900 dark:text-white">CHIC</span>
-                <span className="font-display text-2xl font-light tracking-[0.15em] text-gold-500 ml-1">CLOTHING</span>
+                 <span className="font-display text-lg sm:text-xl font-bold">
+  CHIC
+</span>
+
+<span className="font-display text-lg sm:text-xl font-light text-gold-500 ml-1">
+  CLOTHING
+</span>
               </div>
             </Link>
 
             {/* Desktop Nav */}
             <div className="hidden lg:flex items-center gap-1">
-              <Link to="/" className="nav-link px-3 py-2">Home</Link>
+              <Link to="/" className="text-luxury-800 dark:text-luxury-200 hover:text-gold-500 dark:hover:text-gold-400 transition-colors duration-200 text-base px-3 py-2">
+                Home
+              </Link>
               
-              <div className="relative" onMouseEnter={() => setMegaMenu('brands')} onMouseLeave={() => setMegaMenu(null)}>
-                <button className="nav-link px-3 py-2 flex items-center gap-1">
-                  Brands <ChevronDownIcon className="w-3 h-3" />
-                </button>
-                <AnimatePresence>
-                  {megaMenu === 'brands' && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 w-64 bg-white dark:bg-luxury-800 shadow-2xl border border-luxury-100 dark:border-luxury-700 p-4 grid grid-cols-2 gap-1"
-                    >
-                      {BRANDS.map(brand => (
-                        <Link
-                          key={brand}
-                          to={`/products?brand=${encodeURIComponent(brand)}`}
-                          className="text-sm text-luxury-700 dark:text-luxury-300 hover:text-gold-500 dark:hover:text-gold-400 py-1 px-2 hover:bg-luxury-50 dark:hover:bg-luxury-700 transition-colors"
-                        >
-                          {brand}
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
               <div className="relative" onMouseEnter={() => setMegaMenu('categories')} onMouseLeave={() => setMegaMenu(null)}>
-                <button className="nav-link px-3 py-2 flex items-center gap-1">
+                <button className="text-luxury-800 dark:text-luxury-200 hover:text-gold-500 dark:hover:text-gold-400 transition-colors duration-200 text-base px-3 py-2 flex items-center gap-1">
                   Categories <ChevronDownIcon className="w-3 h-3" />
                 </button>
                 <AnimatePresence>
@@ -141,8 +120,12 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
 
-              <Link to="/products" className="nav-link px-3 py-2">New Arrivals</Link>
-              <Link to="/contact" className="nav-link px-3 py-2">Contact</Link>
+              <Link to="/products" className="text-luxury-800 dark:text-luxury-200 hover:text-gold-500 dark:hover:text-gold-400 transition-colors duration-200 text-sm font-medium px-3 py-2">
+                New Arrivals
+              </Link>
+              <Link to="/contact" className="text-luxury-800 dark:text-luxury-200 hover:text-gold-500 dark:hover:text-gold-400 transition-colors duration-200 text-sm font-medium px-3 py-2">
+                Contact
+              </Link>
             </div>
 
             {/* Right icons */}
@@ -153,25 +136,27 @@ export default function Navbar() {
               </button>
 
               {/* Theme */}
-              <button onClick={toggleTheme} className="p-2 text-luxury-700 dark:text-luxury-300 hover:text-luxury-900 dark:hover:text-white transition-colors">
+              <button
+  onClick={toggleTheme}
+  className="hidden sm:flex p-2 text-luxury-700 dark:text-luxury-300"
+>
                 {isDark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
               </button>
 
               {/* Wishlist */}
-             {isAuthenticated && (
-  <Link
-    to="/wishlist"
-    className="relative p-2 text-luxury-700 dark:text-luxury-300 hover:text-luxury-900 dark:hover:text-white transition-colors"
-  >
-    <HeartIcon className="w-5 h-5" />
-
-    {wishlistCount > 0 && (
-      <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-        {wishlistCount > 9 ? "9+" : wishlistCount}
-      </span>
-    )}
-  </Link>
-)}
+              {isAuthenticated && (
+                <Link
+                  to="/wishlist"
+                  className="relative p-2 text-luxury-700 dark:text-luxury-300 hover:text-luxury-900 dark:hover:text-white transition-colors"
+                >
+                  <HeartIcon className="w-5 h-5" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                      {wishlistCount > 9 ? "9+" : wishlistCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               {/* Cart */}
               <Link to="/cart" className="relative p-2 text-luxury-700 dark:text-luxury-300 hover:text-luxury-900 dark:hover:text-white transition-colors">
@@ -226,9 +211,7 @@ export default function Navbar() {
                         <>
                           <Link to="/login" className="block px-4 py-3 text-sm font-medium text-luxury-900 dark:text-white hover:bg-luxury-50 dark:hover:bg-luxury-700 transition-colors">Sign In</Link>
                           <Link to="/register" className="block px-4 py-3 text-sm text-luxury-700 dark:text-luxury-300 hover:bg-luxury-50 dark:hover:bg-luxury-700 transition-colors">Create Account</Link>
-                          <div className="border-t border-luxury-100 dark:border-luxury-700">
-            
-                          </div>
+                          <div className="border-t border-luxury-100 dark:border-luxury-700"></div>
                         </>
                       )}
                     </motion.div>
@@ -317,7 +300,7 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'tween', duration: 0.25 }}
-              className="fixed top-0 left-0 h-full w-72 bg-white dark:bg-luxury-900 z-[95] overflow-y-auto shadow-2xl"
+              className="fixed top-0 left-0 h-full w-[85%] max-w-xs"
             >
               <div className="flex items-center justify-between p-4 border-b border-luxury-100 dark:border-luxury-800">
                 <span className="font-display font-bold text-xl text-luxury-900 dark:text-white">CHIC <span className="text-gold-500">CLOTHING</span></span>
@@ -326,17 +309,56 @@ export default function Navbar() {
                 </button>
               </div>
               <div className="p-4 space-y-1">
-                <Link to="/" className="block px-3 py-2.5 text-sm font-medium text-luxury-900 dark:text-white hover:text-gold-500">Home</Link>
-                <Link to="/products" className="block px-3 py-2.5 text-sm font-medium text-luxury-900 dark:text-white hover:text-gold-500">All T-Shirts</Link>
-                <div className="pt-2 pb-1 px-3 text-xs tracking-widest uppercase text-luxury-400 font-semibold">Brands</div>
-                {BRANDS.slice(0, 8).map(brand => (
-                  <Link key={brand} to={`/products?brand=${encodeURIComponent(brand)}`} className="block px-3 py-2 text-sm text-luxury-700 dark:text-luxury-300 hover:text-gold-500">{brand}</Link>
-                ))}
-                <div className="pt-2 pb-1 px-3 text-xs tracking-widest uppercase text-luxury-400 font-semibold">Categories</div>
-                {CATEGORIES.map(cat => (
-                  <Link key={cat} to={`/products?category=${encodeURIComponent(cat)}`} className="block px-3 py-2 text-sm text-luxury-700 dark:text-luxury-300 hover:text-gold-500">{cat}</Link>
-                ))}
-              </div>
+
+  {/* Mobile Search */}
+  <div className="mb-4">
+    <input
+      type="text"
+      placeholder="Search products..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && searchQuery.trim()) {
+          navigate(
+            `/products?search=${encodeURIComponent(
+              searchQuery.trim()
+            )}`
+          );
+          setMobileOpen(false);
+        }
+      }}
+      className="w-full px-4 py-2 rounded-xl border border-luxury-200 dark:border-luxury-700 bg-transparent"
+    />
+  </div>
+
+  <Link
+    to="/"
+    className="block px-3 py-2.5 text-sm font-medium"
+  >
+    Home
+  </Link>
+
+  <Link
+    to="/products"
+    className="block px-3 py-2.5 text-sm font-medium"
+  >
+    All T-Shirts
+  </Link>
+
+  <div className="pt-2 pb-1 px-3 text-xs tracking-widest uppercase text-luxury-400 font-semibold">
+    Categories
+  </div>
+
+  {CATEGORIES.map((cat) => (
+    <Link
+      key={cat}
+      to={`/products?category=${encodeURIComponent(cat)}`}
+      className="block px-3 py-2 text-sm text-luxury-700 dark:text-luxury-300 hover:text-gold-500"
+    >
+      {cat}
+    </Link>
+  ))}
+</div>
             </motion.div>
           </>
         )}

@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { WishlistProvider } from "./context/WishlistContext";
 import LoadingSpinner from "./components/LoadingSpinner";
+import ScrollToTop from "./components/ScrollToTop";
 
 
 const HomePage = lazy(() => import('./pages/customer/HomePage'));
@@ -118,6 +119,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
+    <ScrollToTop />
       <ThemeProvider>
         <AuthProvider>
           <CartProvider>
