@@ -29,22 +29,28 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/api";
 
 const PAGE_SIZE = 6; // cards per page
-const STATUS_OPTIONS = ["pending", "processing", "shipped", "delivered", "cancelled"];
+const STATUS_OPTIONS = [
+  "Pending",
+  "Processing",
+  "Shipped",
+  "Delivered",
+  "Cancelled",
+];
 
 const statusStyles = {
-  pending: "bg-amber-50 text-amber-600 border-amber-200",
-  processing: "bg-blue-50 text-blue-600 border-blue-200",
-  shipped: "bg-indigo-50 text-indigo-600 border-indigo-200",
-  delivered: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  cancelled: "bg-red-50 text-red-500 border-red-200",
+  Pending: "bg-amber-50 text-amber-600 border-amber-200",
+  Processing: "bg-blue-50 text-blue-600 border-blue-200",
+  Shipped: "bg-indigo-50 text-indigo-600 border-indigo-200",
+  Delivered: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  Cancelled: "bg-red-50 text-red-500 border-red-200",
 };
 
 const statusIcons = {
-  pending: Clock,
-  processing: Loader2,
-  shipped: Truck,
-  delivered: CheckCircle,
-  cancelled: XCircle,
+  Pending: Clock,
+  Processing: Loader2,
+  Shipped: Truck,
+  Delivered: CheckCircle,
+  Cancelled: XCircle,
 };
 
 // Helper to format currency

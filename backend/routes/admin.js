@@ -454,5 +454,8 @@ const formattedRevenueChart = revenueChart.map(item => ({
     });
   }
 });
+/* =========================
+   DELETE ALL ORDERS
+========================= */
 
 module.exports = router;
