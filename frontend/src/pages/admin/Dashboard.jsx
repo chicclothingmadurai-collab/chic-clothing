@@ -169,7 +169,7 @@ const Dashboard = () => {
           revenueGrowth: data.stats?.revenueGrowth,
           productGrowth: data.stats?.productGrowth,
         });
-console.log("Recent Orders:", recentOrders);
+        console.log("Recent Orders:", recentOrders);
         setRecentOrders(data.recentOrders || []);
         setChartData(data.revenueChart || []);
       } catch (err) {
@@ -432,38 +432,38 @@ console.log("Recent Orders:", recentOrders);
               ))}
             </motion.div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-10 lg:grid-cols-2 gap-100">
+            {/* Charts Row - FIXED COLLISION HERE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Revenue Chart */}
               <div className="h-full flex flex-col justify-center items-center">
-  <div className="text-5xl font-bold text-emerald-600">
-    ₹{stats.totalRevenue?.toLocaleString()}
-  </div>
+                <div className="text-4xl sm:text-5xl font-bold text-emerald-600">
+                  ₹{stats.totalRevenue?.toLocaleString()}
+                </div>
 
-  <p className="mt-3 text-stone-500 text-lg">
-    Total Revenue Generated
-  </p>
+                <p className="mt-3 text-stone-500 text-lg">
+                  Total Revenue Generated
+                </p>
 
-  <div className="mt-6 flex gap-8">
-    <div className="text-center">
-      <p className="text-2xl font-bold">
-        {stats.totalOrders}
-      </p>
-      <p className="text-stone-500 text-sm">
-        Orders
-      </p>
-    </div>
+                <div className="mt-6 flex gap-8">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">
+                      {stats.totalOrders}
+                    </p>
+                    <p className="text-stone-500 text-sm">
+                      Orders
+                    </p>
+                  </div>
 
-    <div className="text-center">
-      <p className="text-2xl font-bold">
-        ₹{Math.round(stats.totalRevenue / Math.max(stats.totalOrders,1))}
-      </p>
-      <p className="text-stone-500 text-sm">
-        Avg Order
-      </p>
-    </div>
-  </div>
-</div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">
+                      ₹{Math.round(stats.totalRevenue / Math.max(stats.totalOrders,1))}
+                    </p>
+                    <p className="text-stone-500 text-sm">
+                      Avg Order
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               {/* Order Status Breakdown */}
               <motion.div

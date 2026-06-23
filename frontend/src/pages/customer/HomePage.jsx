@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
 import api from "../../api/api";
+import logo from "../../assets/logo.png";
 
 // Framer Motion variants
 const fadeUp = {
@@ -37,7 +38,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white font-sans overflow-x-hidden">
       {/* -------- HERO SECTION -------- */}
-      <section className="relative h-screen flex items-center overflow-hidden bg-[#1A1A1A]">
+      <section className="relative min-h-[70vh] md:min-h-screen flex items-center overflow-hidden bg-[#1A1A1A] py-16">
         {/* Animated background gradient */}
         <motion.div
           className="absolute inset-0 bg-gradient-to-br from-black via-zinc-900 to-black opacity-90"
@@ -54,10 +55,10 @@ export default function HomePage() {
         />
 
         {/* Hero content – with parallax effect */}
-        <motion.div
-          style={{ y: yHero }}
-          className="relative max-w-7xl mx-auto px-6 sm:px-10 w-full"
-        >
+<motion.div
+  style={{ y: yHero }}
+  className="relative max-w-7xl mx-auto px-5 sm:px-10 w-full grid lg:grid-cols-2 gap-4 lg:gap-10 items-center"
+> <div>
           <motion.p
             variants={fadeUp}
             initial="hidden"
@@ -73,9 +74,9 @@ export default function HomePage() {
             initial="hidden"
             animate="visible"
             transition={{ delay: 0.3 }}
-            className="font-serif text-5xl sm:text-7xl md:text-8xl font-bold tracking-tight text-white leading-[0.9]"
+            className="font-serif text-4xl sm:text-6xl md:text-8xl"
           >
-            CHIC
+            <span className="text-amber-400">CHIC</span>
             <br />
             <span className="text-amber-400">CLOTHING</span>
           </motion.h1>
@@ -113,6 +114,16 @@ export default function HomePage() {
               Explore
             </Link>
           </motion.div>
+          </div>
+
+{/* Right Side Logo */}
+<div className="flex justify-center items-center mt-8 lg:mt-0">
+  <img
+    src={logo}
+    alt="CHIC Clothing"
+    className="w-32 sm:w-48 md:w-64 lg:w-[300px]"
+  />
+</div>
         </motion.div>
 
         {/* Scroll indicator */}
@@ -120,7 +131,7 @@ export default function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/50 text-xs tracking-widest"
+          className="hidden md:flex absolute bottom-8 left-1/2 ..."
         >
           <span>SCROLL</span>
           <motion.div

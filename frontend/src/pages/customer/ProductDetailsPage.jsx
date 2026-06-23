@@ -114,12 +114,14 @@ const ProductDetailsPage = () => {
       : ["https://via.placeholder.com/500"];
 
   // Safely check if a discount exists
-  const hasDiscount = product.finalPrice !== undefined &&
-                      product.price !== undefined &&
-                      product.finalPrice < product.price;
+const displayPrice = product.finalPrice || product.price;
 
-  // Use finalPrice if available, otherwise fallback to price
-  const displayPrice = product.finalPrice ?? product.price;
+const originalPrice =
+  product.discount > 0
+    ? Math.round(
+        displayPrice / (1 - product.discount / 100)
+      )
+    : displayPrice;
 
   return (
     <PageContainer>
@@ -158,22 +160,23 @@ const ProductDetailsPage = () => {
             <p className="text-gray-500 mb-2">Brand: {product.brand}</p>
           )}
 
-          {/* Price section – static 20% OFF label */}
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-3xl font-bold text-indigo-600">
-              ₹{displayPrice}
-            </span>
+      <div className="flex items-center gap-3 mb-4">
+  <span className="text-3xl font-bold text-indigo-600">
+    ₹{displayPrice}
+  </span>
 
-            {hasDiscount && (
-              <span className="line-through text-gray-400 text-lg">
-                ₹{product.price}
-              </span>
-            )}
+  {product.discount > 0 && (
+    <>
+      <span className="line-through text-gray-400 text-lg">
+        ₹{originalPrice}
+      </span>
 
-            {/* Static 20% OFF label – appears for all products */}
-            <span className="text-green-600 font-medium">20% OFF</span>
-          </div>
-
+      <span className="text-green-600 font-semibold">
+        {product.discount}% OFF
+      </span>
+    </>
+  )}
+</div>
           <p className="text-gray-600 mb-6 leading-relaxed">{product.description}</p>
 
           <div className="mb-6">

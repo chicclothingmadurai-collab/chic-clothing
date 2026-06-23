@@ -20,13 +20,13 @@ const emptyProduct = {
   brand: "",
   description: "",
   price: "",
+  discount: "",
   category: "",
   stock: "",
   sizes: [],
-colors: [],
+  colors: [],
   images: "",
 };
-
 const PAGE_SIZE = 8;
 
 const BRANDS = [
@@ -146,6 +146,7 @@ const ProductManagement = () => {
       brand: product.brand || "",
       description: product.description || "",
       price: product.price || "",
+      discount: product.discount || 0,
       category: product.category || "",
       stock: product.stock ?? "",
       sizes: product.sizes || [],
@@ -166,6 +167,10 @@ colors: (product.colors || []).map(c => c.name),
       formData.append("brand", form.brand);
       formData.append("description", form.description);
       formData.append("price", Number(form.price));
+      formData.append(
+  "discount",
+  Number(form.discount || 0)
+);
       formData.append("category", form.category);
       formData.append("stock", Number(form.stock));
 
@@ -505,6 +510,25 @@ colors: (product.colors || []).map(c => c.name),
                       <p className="text-xs text-red-500 mt-1">{formErrors.price}</p>
                     )}
                   </div>
+                  <div>
+  <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">
+    Discount (%)
+  </label>
+
+  <input
+    type="number"
+    min="0"
+    max="90"
+    value={form.discount || ""}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        discount: e.target.value,
+      })
+    }
+    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition"
+  />
+</div>
                   <div>
                     <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">
                       Stock
