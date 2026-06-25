@@ -36,9 +36,10 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://chic-clothing-two.vercel.app",
-      process.env.FRONTEND_URL
+      "https://www.chicclothing.in",
+      "https://chicclothing.in"
     ],
-    credentials: true
+    credentials: true,
   })
 );
 
