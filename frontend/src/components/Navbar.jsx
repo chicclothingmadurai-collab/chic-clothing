@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { useTheme } from "../context/ThemeContext";
 import { productAPI } from "../api/api";
 import {
@@ -135,14 +136,15 @@ export default function Navbar() {
                 <MagnifyingGlassIcon className="w-5 h-5" />
               </button>
 
-              {/* Theme */}
-              <button
-  onClick={toggleTheme}
-  className="hidden sm:flex p-2 text-luxury-700 dark:text-luxury-300"
->
-                {isDark ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
-              </button>
-
+             {isAuthenticated && (
+  <Link
+    to="/my-orders"
+    className="relative p-2 text-luxury-700 dark:text-luxury-300 hover:text-gold-500 transition-colors"
+    title="My Orders"
+  >
+    <ClipboardDocumentListIcon className="w-5 h-5" />
+  </Link>
+)}
               {/* Wishlist */}
               {isAuthenticated && (
                 <Link

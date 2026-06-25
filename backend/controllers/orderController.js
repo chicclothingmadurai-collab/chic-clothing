@@ -224,10 +224,10 @@ const createOrder = async (req, res) => {
     `;
 
     try {
-      await sendEmail(
-  "chicclothing2026@gmail.com",
-  "NEW ORDER RECEIVED - CHIC Clothing",
-  adminHtml
+     await sendEmail(
+  order.shippingAddress.email,
+  "Order Confirmed - CHIC Clothing",
+  customerHtml
 );
       console.log("Email sent (admin)");
     } catch (err) {

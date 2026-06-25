@@ -17,10 +17,10 @@ import api from "../../api/api";
 
 // Status badge styles (same as before)
 const statusStyles = {
-  Processing: "bg-green-100 text-green-700 border-green-200",
-  shipped: "bg-indigo-50 text-indigo-600 border-indigo-200",
-  delivered: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  cancelled: "bg-red-50 text-red-500 border-red-200",
+  Processing: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  Shipped: "bg-blue-100 text-blue-700 border-blue-200",
+  Delivered: "bg-green-100 text-green-700 border-green-200",
+  Cancelled: "bg-red-100 text-red-700 border-red-200",
 };
 
 const StatusBadge = ({ status }) => (
@@ -117,7 +117,7 @@ const MyOrdersPage = () => {
               {orders.map((order, idx) => {
                 const orderId = order._id || order.id;
                 const orderNumber = order.orderNumber || orderId?.slice(-8) || "---";
-                const status = order.status || "Processing";
+                const status = order.orderStatus || "Processing";
                 const items = order.items || [];
                 const total = order.grandTotal || order.total || 0;
                 const createdAt = order.createdAt;
@@ -263,7 +263,7 @@ const MyOrdersPage = () => {
 
               {/* Status & total */}
               <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-                <StatusBadge status={selectedOrder.status || "Processing"} />
+                <StatusBadge status={selectedOrder.orderStatus || "Processing"} />
                 <p className="text-sm font-semibold text-stone-900 flex items-center gap-1">
                   <IndianRupee className="w-4 h-4" />
                   {Number(selectedOrder.grandTotal || selectedOrder.total || 0).toLocaleString()}
