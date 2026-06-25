@@ -161,21 +161,14 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-        >
+      <motion.div
+  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+>
           {products.map((product) => (
-            <motion.div
-              key={product._id}
-              variants={fadeUp}
-              whileHover={{ y: -8 }}
-              transition={{ duration: 0.3 }}
-              className="group cursor-pointer"
-            >
+            <div
+  key={product._id}
+  className="group cursor-pointer"
+>
               <Link to={`/products/${product._id}`}>
                 <div className="relative aspect-[3/4] bg-stone-100 overflow-hidden">
                   <img
@@ -204,7 +197,7 @@ export default function HomePage() {
                   </p>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </motion.div>
       </section>
