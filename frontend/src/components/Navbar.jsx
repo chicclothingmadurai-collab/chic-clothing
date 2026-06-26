@@ -11,6 +11,7 @@ import {
   MagnifyingGlassIcon, ShoppingBagIcon, HeartIcon, UserIcon,
   SunIcon, MoonIcon, Bars3Icon, XMarkIcon, ChevronDownIcon
 } from '@heroicons/react/24/outline';
+import { X } from 'lucide-react'; // New import for mobile close icon
 
 const CATEGORIES = ['Oversized', 'Polo', 'Round Neck', 'Printed', 'Plain', 'Sports', 'Casual', 'Premium Cotton'];
 
@@ -79,13 +80,8 @@ export default function Navbar() {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
               <div className="relative">
-                 <span className="font-display text-lg sm:text-xl font-bold">
-  CHIC
-</span>
-
-<span className="font-display text-lg sm:text-xl font-light text-gold-500 ml-1">
-  CLOTHING
-</span>
+                <span className="font-display text-lg sm:text-xl font-bold">CHIC</span>
+                <span className="font-display text-lg sm:text-xl font-light text-gold-500 ml-1">CLOTHING</span>
               </div>
             </Link>
 
@@ -136,15 +132,16 @@ export default function Navbar() {
                 <MagnifyingGlassIcon className="w-5 h-5" />
               </button>
 
-             {isAuthenticated && (
-  <Link
-    to="/my-orders"
-    className="relative p-2 text-luxury-700 dark:text-luxury-300 hover:text-gold-500 transition-colors"
-    title="My Orders"
-  >
-    <ClipboardDocumentListIcon className="w-5 h-5" />
-  </Link>
-)}
+              {isAuthenticated && (
+                <Link
+                  to="/my-orders"
+                  className="relative p-2 text-luxury-700 dark:text-luxury-300 hover:text-gold-500 transition-colors"
+                  title="My Orders"
+                >
+                  <ClipboardDocumentListIcon className="w-5 h-5" />
+                </Link>
+              )}
+
               {/* Wishlist */}
               {isAuthenticated && (
                 <Link
@@ -221,7 +218,7 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
 
-              {/* Mobile menu */}
+              {/* Mobile menu button */}
               <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 text-luxury-700 dark:text-luxury-300">
                 <Bars3Icon className="w-5 h-5" />
               </button>
@@ -286,85 +283,72 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile drawer */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[90] bg-black/50"
-              onClick={() => setMobileOpen(false)}
-            />
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', duration: 0.25 }}
-              className="fixed top-0 left-0 h-full w-[85%] max-w-xs"
-            >
-              <div className="flex items-center justify-between p-4 border-b border-luxury-100 dark:border-luxury-800">
-                <span className="font-display font-bold text-xl text-luxury-900 dark:text-white">CHIC <span className="text-gold-500">CLOTHING</span></span>
-                <button onClick={() => setMobileOpen(false)}>
-                  <XMarkIcon className="w-6 h-6 text-luxury-700 dark:text-luxury-300" />
-                </button>
-              </div>
-              <div className="p-4 space-y-1">
+      {/* ---------- UPDATED MOBILE DRAWER ---------- */}
+      {mobileOpen && (
+        <>
+          {/* Background Overlay */}
+          <div
+            className="fixed inset-0 bg-black/60 z-40"
+            onClick={() => setMobileOpen(false)}
+          />
 
-  {/* Mobile Search */}
-  <div className="mb-4">
-    <input
-      type="text"
-      placeholder="Search products..."
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" && searchQuery.trim()) {
-          navigate(
-            `/products?search=${encodeURIComponent(
-              searchQuery.trim()
-            )}`
-          );
-          setMobileOpen(false);
-        }
-      }}
-      className="w-full px-4 py-2 rounded-xl border border-luxury-200 dark:border-luxury-700 bg-transparent"
-    />
-  </div>
+          {/* Side Menu */}
+          <div className="fixed top-0 right-0 h-full w-72 bg-gray-900 dark:bg-luxury-900 z-50 shadow-2xl overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 dark:border-luxury-700">
+              <h2 className="text-xl font-bold text-white">
+                Menu
+              </h2>
+              <button onClick={() => setMobileOpen(false)}>
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
 
-  <Link
-    to="/"
-    className="block px-3 py-2.5 text-sm font-medium"
-  >
-    Home
-  </Link>
+            {/* Navigation */}
+            <div className="p-4 space-y-3">
+              <Link
+                to="/"
+                className="block text-white py-2 px-3 rounded hover:bg-gray-800 dark:hover:bg-luxury-800 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                 Home
+              </Link>
 
-  <Link
-    to="/products"
-    className="block px-3 py-2.5 text-sm font-medium"
-  >
-    All T-Shirts
-  </Link>
+              <Link
+                to="/my-orders"
+                className="block text-white py-2 px-3 rounded hover:bg-gray-800 dark:hover:bg-luxury-800 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                 My Orders
+              </Link>
 
-  <div className="pt-2 pb-1 px-3 text-xs tracking-widest uppercase text-luxury-400 font-semibold">
-    Categories
-  </div>
+              <Link
+                to="/wishlist"
+                className="block text-white py-2 px-3 rounded hover:bg-gray-800 dark:hover:bg-luxury-800 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                 Wishlist
+              </Link>
 
-  {CATEGORIES.map((cat) => (
-    <Link
-      key={cat}
-      to={`/products?category=${encodeURIComponent(cat)}`}
-      className="block px-3 py-2 text-sm text-luxury-700 dark:text-luxury-300 hover:text-gold-500"
-    >
-      {cat}
-    </Link>
-  ))}
-</div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              <Link
+                to="/cart"
+                className="block text-white py-2 px-3 rounded hover:bg-gray-800 dark:hover:bg-luxury-800 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                 Cart
+              </Link>
+
+              <Link
+                to="/profile"
+                className="block text-white py-2 px-3 rounded hover:bg-gray-800 dark:hover:bg-luxury-800 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                 Profile
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

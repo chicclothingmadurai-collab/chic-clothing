@@ -28,19 +28,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Categories */}
-          <div>
-            <h4 className="text-xs tracking-widest uppercase font-semibold text-luxury-400 mb-4">Categories</h4>
-            <ul className="space-y-2">
-              {['Oversized T-Shirts', 'Polo T-Shirts', 'Round Neck', 'Printed T-Shirts', 'Sports T-Shirts', 'Premium Cotton'].map(cat => (
-                <li key={cat}>
-                  <Link to={`/products?category=${encodeURIComponent(cat.replace(' T-Shirts', ''))}`} className="text-sm text-luxury-400 hover:text-gold-400 transition-colors">
-                    {cat}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+         
 
           {/* Support */}
           <div>

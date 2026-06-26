@@ -4,9 +4,17 @@ const { Cart } = require("../models");
 const Product = require("../models/Product");
 const User = require("../models/User");
 
+// ---------- ADMIN EMAIL RECIPIENTS ----------
+const ADMIN_EMAILS = [
+  "eliteeventsx@gmail.com",
+  "kalamcricketer18@gmail.com",
+  "kishoreg@student.tce.edu",
+  "syedshamil3088@gmail.com",
+  "somu24397@gmail.com",
+];
+
 const createOrder = async (req, res) => {
   try {
-    
     console.log(req.body);
 
     const {
@@ -17,8 +25,6 @@ const createOrder = async (req, res) => {
     } = req.body;
 
     const user = await User.findById(req.user._id);
-
-    
     console.log(user);
 
     if (!user) {
@@ -32,7 +38,6 @@ const createOrder = async (req, res) => {
       user: req.user._id,
     }).populate("items.product");
 
-    
     console.log(cart);
 
     if (!cart || cart.items.length === 0) {
@@ -42,9 +47,7 @@ const createOrder = async (req, res) => {
       });
     }
 
-    
     console.log(addressId);
-
     console.log("========== USER ADDRESSES ==========");
     console.log(user.addresses);
 
@@ -60,7 +63,7 @@ const createOrder = async (req, res) => {
       });
     }
 
-    // ---------- STOCK VALIDATION BEFORE ORDER CREATION ----------
+    // ---------- STOCK VALIDATION ----------
     for (const item of cart.items) {
       const product = await Product.findById(item.product._id);
       if (!product) {
@@ -129,9 +132,7 @@ const createOrder = async (req, res) => {
       couponCode: cart.couponCode || "",
       grandTotal,
       orderStatus: "Processing",
-      estimatedDelivery: new Date(
-        Date.now() + 7 * 24 * 60 * 60 * 1000
-      ),
+      estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       statusHistory: [
         {
           status: "Processing",
@@ -140,28 +141,65 @@ const createOrder = async (req, res) => {
       ],
     });
 
-    // ---------- CUSTOMER EMAIL (with product details and delivery address) ----------
-    const productsHtml = order.items
+    // ---------- FORMAT ORDER BOOKING TIME (IST) ----------
+    const orderPlacedAt = new Date(order.createdAt);
+    const bookingTime = orderPlacedAt.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "full",
+      timeStyle: "long",
+    });
+
+    // ---------- BUILD PRODUCT LIST HTML (reused for both) ----------
+    const productListItems = order.items
       .map(
         (item) => `
-          <li>
-            ${item.name} - Size: ${item.size}
-            × ${item.quantity}
-            - ₹${item.finalPrice}
+          <li style="display: flex; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+            <img src="${item.image}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; margin-right: 12px; border-radius: 6px;" />
+            <div>
+              <strong>${item.name}</strong><br />
+              Size: ${item.size} &nbsp;|&nbsp; Qty: ${item.quantity} &nbsp;|&nbsp; ₹${item.finalPrice}
+            </div>
           </li>
         `
       )
       .join("");
 
+    const adminProductList = order.items
+      .map(
+        (item) => `
+          <li style="display: flex; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">
+            <img src="${item.image}" alt="${item.name}" style="width: 70px; height: 70px; object-fit: cover; margin-right: 15px; border-radius: 6px;" />
+            <div>
+              <strong>${item.name}</strong><br />
+              Brand: ${item.brand || "N/A"}<br />
+              Size: ${item.size} &nbsp;|&nbsp; Color: ${item.color || "N/A"}<br />
+              Qty: ${item.quantity} &nbsp;|&nbsp; Price: ₹${item.finalPrice}
+            </div>
+          </li>
+        `
+      )
+      .join("");
+
+    // ---------- CUSTOMER EMAIL (products at the top) ----------
     const customerHtml = `
       <h2>Thank You for Shopping with CHIC Clothing ❤️</h2>
       <p>Your order has been confirmed successfully.</p>
+      
+      <!-- Products at the top -->
+      <h3>Your Order Summary</h3>
+      <ul style="list-style: none; padding: 0;">${productListItems}</ul>
+      <p><strong>Total Paid:</strong> ₹${order.grandTotal}</p>
+      <hr style="border: 1px solid #eee; margin: 20px 0;" />
+
+      <!-- Order details -->
       <p><strong>Order ID:</strong> ${order.orderId}</p>
+      <p><strong>Order Date:</strong> ${new Date().toLocaleDateString("en-IN")}</p>
+      <p><strong>Order Time:</strong> ${new Date().toLocaleTimeString("en-IN")}</p>
+      <p><strong>Estimated Delivery:</strong> Within 5 Business Days</p>
       <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
       <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
-      <h3>Order Summary</h3>
-      <ul>${productsHtml}</ul>
-      <p><strong>Total Paid:</strong> ₹${order.grandTotal}</p>
+
+      <!-- Delivery address -->
       <h3>Delivery Address</h3>
       <p>
         ${order.shippingAddress.fullName}<br>
@@ -172,48 +210,36 @@ const createOrder = async (req, res) => {
       </p>
       <p>Expected delivery within 5-7 business days.</p>
       <p>
+        You can track your order anytime from the My Orders section of
+        CHIC Clothing.
+      </p>
+      <p>
         Thank you for buying from CHIC Clothing.<br>
         Your order will be delivered soon.
       </p>
     `;
 
-    try {
-      await sendEmail(
-  "chicclothing2026@gmail.com",
-  "Order Confirmed - CHIC Clothing",
-  customerHtml
-);
-      console.log("Email sent (customer):", order.shippingAddress.email);
-    } catch (err) {
-      console.error("Email error (customer):", err);
-    }
-
-    // ---------- ADMIN EMAIL (complete order details) ----------
-    const adminProducts = order.items
-      .map(
-        (item) => `
-          <li>
-            ${item.name}
-            | Size: ${item.size}
-            | Qty: ${item.quantity}
-            | ₹${item.finalPrice}
-          </li>
-        `
-      )
-      .join("");
-
+    // ---------- ADMIN EMAIL (products at the top) ----------
     const adminHtml = `
       <h2>🛒 NEW ORDER RECEIVED</h2>
+      
+      <!-- Products at the top -->
+      <h3>Products Ordered</h3>
+      <ul style="list-style: none; padding: 0;">${adminProductList}</ul>
+      <p><strong>Total Amount:</strong> ₹${order.grandTotal}</p>
+      <hr style="border: 1px solid #ddd; margin: 20px 0;" />
+
+      <!-- Order and customer details -->
       <p><strong>Order ID:</strong> ${order.orderId}</p>
+      <p><strong>Placed at:</strong> ${bookingTime}</p>
       <p><strong>Customer:</strong> ${order.shippingAddress.fullName}</p>
       <p><strong>Email:</strong> ${order.shippingAddress.email}</p>
       <p><strong>Mobile:</strong> ${order.shippingAddress.mobile}</p>
       <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
       <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
-      <p><strong>Razorpay Payment ID:</strong> ${order.razorpayPaymentId}</p>
-      <p><strong>Total Amount:</strong> ₹${order.grandTotal}</p>
-      <h3>Products</h3>
-      <ul>${adminProducts}</ul>
+      <p><strong>Razorpay Payment ID:</strong> ${order.razorpayPaymentId || "N/A"}</p>
+
+      <!-- Delivery address -->
       <h3>Delivery Address</h3>
       <p>
         ${order.shippingAddress.addressLine}<br>
@@ -223,18 +249,31 @@ const createOrder = async (req, res) => {
       </p>
     `;
 
+    // Send customer confirmation
     try {
-     await sendEmail(
-  order.shippingAddress.email,
-  "Order Confirmed - CHIC Clothing",
-  customerHtml
-);
-      console.log("Email sent (admin)");
+      await sendEmail(
+        order.shippingAddress.email,
+        "Order Confirmed - CHIC Clothing",
+        customerHtml
+      );
+      console.log("Email sent (customer):", order.shippingAddress.email);
+    } catch (err) {
+      console.error("Email error (customer):", err);
+    }
+
+    // Send admin notification
+    try {
+      await sendEmail(
+        ADMIN_EMAILS,
+        "NEW ORDER RECEIVED - CHIC Clothing",
+        adminHtml
+      );
+      console.log("Email sent (admin) to:", ADMIN_EMAILS);
     } catch (err) {
       console.error("Email error (admin):", err);
     }
 
-    // ---------- UPDATE STOCK (safe because we already validated) ----------
+    // ---------- UPDATE STOCK ----------
     for (const item of cart.items) {
       await Product.findByIdAndUpdate(
         item.product._id,
@@ -267,6 +306,7 @@ const createOrder = async (req, res) => {
   }
 };
 
+// ---------- OTHER FUNCTIONS (unchanged) ----------
 const getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({
