@@ -6,11 +6,11 @@ const User = require("../models/User");
 
 // ---------- ADMIN EMAIL RECIPIENTS ----------
 const ADMIN_EMAILS = [
-  "eliteeventsx@gmail.com",
   "kalamcricketer18@gmail.com",
   "kishoreg@student.tce.edu",
   "syedshamil3088@gmail.com",
   "somu24397@gmail.com",
+  "chicclothing2026@gmail.com"
 ];
 
 const createOrder = async (req, res) => {
