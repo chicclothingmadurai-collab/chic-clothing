@@ -14,6 +14,18 @@ import {
 } from "lucide-react";
 import api from "../../api/api";
 
+// -------- Global style to hide spinners --------
+const style = `
+  input[type="number"].no-spinner::-webkit-outer-spin-button,
+  input[type="number"].no-spinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"].no-spinner {
+    -moz-appearance: textfield;
+  }
+`;
+
 // -------- Empty Product Template --------
 const emptyProduct = {
   name: "",
@@ -26,7 +38,12 @@ const emptyProduct = {
   sizes: [],
   colors: [],
   images: "",
+  tags: [],
+  isFeatured: false,
+  isNewArrival: false,
+  isBestSeller: false,
 };
+
 const PAGE_SIZE = 8;
 
 const BRANDS = [
@@ -74,6 +91,7 @@ const COLORS = [
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -136,6 +154,8 @@ const ProductManagement = () => {
   const openAdd = () => {
     setForm(emptyProduct);
     setEditingId(null);
+    setSelectedImages([]);
+    setPreviewImages([]);
     setFormErrors({});
     setModalOpen(true);
   };
@@ -150,12 +170,29 @@ const ProductManagement = () => {
       category: product.category || "",
       stock: product.stock ?? "",
       sizes: product.sizes || [],
-colors: (product.colors || []).map(c => c.name),
+      colors: (product.colors || []).map(c => c.name),
       images: (product.images || []).join(", "),
+      tags: product.tags || [],
+      isFeatured: product.isFeatured || false,
+      isNewArrival: product.isNewArrival || false,
+      isBestSeller: product.isBestSeller || false,
     });
     setEditingId(product._id || product.id);
+    setSelectedImages([]);
+    setPreviewImages([]);
     setFormErrors({});
     setModalOpen(true);
+  };
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 10) {
+      alert("Maximum 10 images allowed");
+      return;
+    }
+    setSelectedImages(files);
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setPreviewImages(previews);
   };
 
   const handleSave = async () => {
@@ -167,17 +204,10 @@ colors: (product.colors || []).map(c => c.name),
       formData.append("brand", form.brand);
       formData.append("description", form.description);
       formData.append("price", Number(form.price));
-      formData.append(
-  "discount",
-  Number(form.discount || 0)
-);
+      formData.append("discount", Number(form.discount || 0));
       formData.append("category", form.category);
       formData.append("stock", Number(form.stock));
-
-      formData.append(
-  "sizes",
-  JSON.stringify(form.sizes)
-);
+      formData.append("sizes", JSON.stringify(form.sizes));
       formData.append(
         "colors",
         JSON.stringify(
@@ -187,7 +217,10 @@ colors: (product.colors || []).map(c => c.name),
           }))
         )
       );
-      formData.append("tags", JSON.stringify([]));
+      formData.append("tags", JSON.stringify(form.tags || []));
+      formData.append("isFeatured", form.isFeatured ? "true" : "false");
+      formData.append("isNewArrival", form.isNewArrival ? "true" : "false");
+      formData.append("isBestSeller", form.isBestSeller ? "true" : "false");
 
       selectedImages.forEach((image) => {
         formData.append("images", image);
@@ -203,6 +236,11 @@ colors: (product.colors || []).map(c => c.name),
         });
       }
 
+      // -------- Clear form after successful save --------
+      setForm(emptyProduct);
+      setSelectedImages([]);
+      setPreviewImages([]);
+      setEditingId(null);
       setModalOpen(false);
       fetchProducts();
     } catch (err) {
@@ -246,6 +284,9 @@ colors: (product.colors || []).map(c => c.name),
   // -------- JSX --------
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-white to-stone-50/40 font-sans">
+      {/* Inject the style to hide number spinners */}
+      <style>{style}</style>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
@@ -466,17 +507,17 @@ colors: (product.colors || []).map(c => c.name),
 
                 {/* Brand */}
                 <input
-  type="text"
-  value={form.brand}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      brand: e.target.value,
-    })
-  }
-  placeholder="Enter Brand Name"
-  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
-/>
+                  type="text"
+                  value={form.brand}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      brand: e.target.value,
+                    })
+                  }
+                  placeholder="Enter Brand Name"
+                  className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
+                />
 
                 {/* Description */}
                 <div>
@@ -494,41 +535,54 @@ colors: (product.colors || []).map(c => c.name),
                   )}
                 </div>
 
-                {/* Price, Stock, Category */}
-                <div className="grid sm:grid-cols-3 gap-4">
+                {/* Price, Discount, Stock, Category */}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">
                       Price (₹)
                     </label>
                     <input
                       type="number"
+                      min="0"
+                      step="any"
                       value={form.price}
-                      onChange={(e) => setForm({ ...form, price: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "" || Number(val) >= 0) {
+                          setForm({ ...form, price: val });
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "-" || e.key === "e") e.preventDefault();
+                      }}
+                      className="no-spinner w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition"
                     />
                     {formErrors.price && (
                       <p className="text-xs text-red-500 mt-1">{formErrors.price}</p>
                     )}
                   </div>
                   <div>
-  <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">
-    Discount (%)
-  </label>
-
-  <input
-    type="number"
-    min="0"
-    max="90"
-    value={form.discount || ""}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        discount: e.target.value,
-      })
-    }
-    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition"
-  />
-</div>
+                    <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">
+                      Discount (%)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="any"
+                      value={form.discount || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (/^\d*$/.test(val) && Number(val || 0) <= 100) {
+                          setForm({ ...form, discount: val });
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "-" || e.key === "e") e.preventDefault();
+                      }}
+                      className="no-spinner w-full px-4 py-3 rounded-2xl border-2 border-stone-200 bg-stone-50 text-stone-900 font-semibold text-lg focus:border-amber-500 focus:ring-4 focus:ring-amber-100 transition-all"
+                    />
+                  </div>
                   <div>
                     <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">
                       Stock
@@ -536,14 +590,18 @@ colors: (product.colors || []).map(c => c.name),
                     <input
                       type="number"
                       min="0"
+                      step="1"
                       value={form.stock}
-                    onChange={(e) =>
-  setForm({
-    ...form,
-    stock: Math.max(0, Number(e.target.value)),
-  })
-}
-                      className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "" || Number(val) >= 0) {
+                          setForm({ ...form, stock: val });
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "-" || e.key === "e") e.preventDefault();
+                      }}
+                      className="no-spinner w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition"
                     />
                     {formErrors.stock && (
                       <p className="text-xs text-red-500 mt-1">{formErrors.stock}</p>
@@ -576,144 +634,151 @@ colors: (product.colors || []).map(c => c.name),
 
                 {/* Sizes & Colors */}
                 <div>
-  <label className="block text-xs font-medium mb-3">
-    Sizes
-  </label>
-
-  <div className="grid grid-cols-3 gap-2">
-    {SIZES.map((size) => (
-      <label
-        key={size}
-        className="flex items-center gap-2"
-      >
-        <input
-          type="checkbox"
-          checked={form.sizes.includes(size)}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setForm({
-                ...form,
-                sizes: [...form.sizes, size],
-              });
-            } else {
-              setForm({
-                ...form,
-                sizes: form.sizes.filter(
-                  (s) => s !== size
-                ),
-              });
-            }
-          }}
-        />
-
-        {size}
-      </label>
-    ))}
-  </div>
-<div>
-  <label className="block text-xs font-medium mb-3">
-    Colors
-  </label>
-
-  <div className="grid grid-cols-3 gap-2 mb-4">
-    {COLORS.map((color) => (
-      <label
-        key={color}
-        className="flex items-center gap-2"
-      >
-        <input
-          type="checkbox"
-          checked={form.colors.includes(color)}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setForm({
-                ...form,
-                colors: [...form.colors, color],
-              });
-            } else {
-              setForm({
-                ...form,
-                colors: form.colors.filter(
-                  (c) => c !== color
-                ),
-              });
-            }
-          }}
-        />
-
-        {color}
-      </label>
-    ))}
-  </div>
-
-  <div className="flex gap-2">
-    <input
-      type="text"
-      value={customColor}
-      onChange={(e) =>
-        setCustomColor(e.target.value)
-      }
-      placeholder="Add custom color"
-      className="flex-1 px-4 py-2 rounded-xl border border-stone-200"
-    />
-
-    <button
-      type="button"
-      onClick={() => {
-        if (
-          customColor.trim() &&
-          !form.colors.includes(customColor.trim())
-        ) {
-          setForm({
-            ...form,
-            colors: [
-              ...form.colors,
-              customColor.trim(),
-            ],
-          });
-
-          setCustomColor("");
-        }
-      }}
-      className="px-4 py-2 rounded-xl bg-black text-white"
-    >
-      Add
-    </button>
-  </div>
-
-  {form.colors.length > 0 && (
-    <div className="flex flex-wrap gap-2 mt-4">
-      {form.colors.map((color) => (
-        <span
-          key={color}
-          className="px-3 py-1 rounded-full bg-stone-100 text-sm"
-        >
-          {color}
-        </span>
-      ))}
-    </div>
-  )}
-
-                  
-</div>
+                  <label className="block text-xs font-medium mb-3">Sizes</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {SIZES.map((size) => (
+                      <label key={size} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={form.sizes.includes(size)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setForm({
+                                ...form,
+                                sizes: [...form.sizes, size],
+                              });
+                            } else {
+                              setForm({
+                                ...form,
+                                sizes: form.sizes.filter(
+                                  (s) => s !== size
+                                ),
+                              });
+                            }
+                          }}
+                        />
+                        {size}
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Images */}
+                <div>
+                  <label className="block text-xs font-medium mb-3">Colors</label>
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {COLORS.map((color) => (
+                      <label key={color} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={form.colors.includes(color)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setForm({
+                                ...form,
+                                colors: [...form.colors, color],
+                              });
+                            } else {
+                              setForm({
+                                ...form,
+                                colors: form.colors.filter(
+                                  (c) => c !== color
+                                ),
+                              });
+                            }
+                          }}
+                        />
+                        {color}
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={customColor}
+                      onChange={(e) => setCustomColor(e.target.value)}
+                      placeholder="Add custom color"
+                      className="flex-1 px-4 py-2 rounded-xl border border-stone-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (
+                          customColor.trim() &&
+                          !form.colors.includes(customColor.trim())
+                        ) {
+                          setForm({
+                            ...form,
+                            colors: [
+                              ...form.colors,
+                              customColor.trim(),
+                            ],
+                          });
+                          setCustomColor("");
+                        }
+                      }}
+                      className="px-4 py-2 rounded-xl bg-black text-white"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {form.colors.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {form.colors.map((color) => (
+                        <span
+                          key={color}
+                          className="px-3 py-1 rounded-full bg-stone-100 text-sm"
+                        >
+                          {color}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* -------- UPDATED IMAGE UPLOAD SECTION -------- */}
                 <div>
                   <label className="block text-xs font-medium text-stone-500 uppercase tracking-wider mb-1.5">
-                    Product Images
+                    Product Images (Max 10)
                   </label>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={(e) => setSelectedImages(Array.from(e.target.files))}
-                    className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-400/40 transition"
-                  />
-                  {selectedImages.length > 0 && (
-                    <p className="text-sm text-emerald-600 mt-2">
-                      {selectedImages.length} image(s) selected
-                    </p>
+
+                  {/* Drag & Drop / Click to Upload */}
+                  <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-stone-300 rounded-2xl cursor-pointer hover:border-amber-500 transition">
+                    <div className="text-center">
+                      <p className="font-semibold text-stone-700">
+                        Click to Upload Images
+                      </p>
+                      <p className="text-sm text-stone-500">
+                        Maximum 10 images
+                      </p>
+                      <p className="text-xs text-stone-400 mt-1">
+                        {selectedImages.length > 0
+                          ? `${selectedImages.length} selected`
+                          : "No images selected"}
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+
+                  {/* Image Preview Grid */}
+                  {previewImages.length > 0 && (
+                    <div className="grid grid-cols-5 gap-3 mt-4">
+                      {previewImages.map((img, index) => (
+                        <img
+                          key={index}
+                          src={img}
+                          alt={`preview ${index}`}
+                          className="w-full h-24 object-cover rounded-xl border border-stone-200"
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>

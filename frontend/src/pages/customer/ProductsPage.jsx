@@ -96,6 +96,16 @@ const ProductsPage = () => {
     setSearchParams(params);
   };
 
+  // Helper to compute display price and original price
+  const computePrices = (product) => {
+    const price = Number(product.price);
+    const discount = Number(product.discount) || 0;
+    // If finalPrice is provided by backend, use it; else compute
+    const displayPrice = product.finalPrice || (discount > 0 ? price * (1 - discount / 100) : price);
+    const originalPrice = discount > 0 ? Math.round(price / (1 - discount / 100)) : price;
+    return { displayPrice, originalPrice, discount };
+  };
+
   return (
     <PageContainer>
       <h1 className="text-2xl font-bold text-gray-800 mb-6">All Products</h1>
@@ -143,52 +153,62 @@ const ProductsPage = () => {
 
       {!loading && !error && products.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {products.map((product) => (
-            <motion.div
-  key={product._id}
-  whileHover={{ y: -8 }}
-  className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300"
->
-              <Link to={`/products/${product._id}`}>
-                <img
-  src={
-    product.images?.[0]?.url ||
-    "https://via.placeholder.com/400"
-  }
-  alt={product.name}
-  className="w-full h-72 md:h-80 object-cover transition-transform duration-500 group-hover:scale-105"
-/>
-                <div className="p-4">
-  <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
-    {product.brand}
-  </p>
+          {products.map((product) => {
+            const { displayPrice, originalPrice, discount } = computePrices(product);
+            return (
+              <motion.div
+                key={product._id}
+                whileHover={{ y: -8 }}
+                className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300"
+              >
+                <Link to={`/products/${product._id}`}>
+                  <img
+                    src={
+                      product.images?.[0]?.url ||
+                      "https://via.placeholder.com/400"
+                    }
+                    alt={product.name}
+                    className="w-full h-72 md:h-80 object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="p-4">
+                    <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                      {product.brand}
+                    </p>
 
-  <h3 className="font-semibold text-gray-900 line-clamp-2 min-h-[48px]">
-    {product.name}
-  </h3>
+                    <h3 className="font-semibold text-gray-900 line-clamp-2 min-h-[48px]">
+                      {product.name}
+                    </h3>
 
-  <div className="mt-3 flex items-center justify-between">
-    <p className="text-lg font-bold text-black">
-      ₹{product.price}
-    </p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <p className="text-lg font-bold text-black">
+                          ₹{Math.round(displayPrice)}
+                        </p>
+                        {discount > 0 && (
+                          <p className="text-sm text-gray-400 line-through">
+                            ₹{Math.round(originalPrice)}
+                          </p>
+                        )}
+                      </div>
 
-    {product.stock > 0 ? (
-      <span className="text-green-600 text-xs font-medium">
-        In Stock
-      </span>
-    ) : (
-      <span className="text-red-500 text-xs font-medium">
-        Out of Stock
-      </span>
-    )}
-  </div>
-                  {product.stock === 0 && (
-                    <span className="text-xs text-red-500 font-medium">Out of stock</span>
-                  )}
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                      {product.stock > 0 ? (
+                        <span className="text-green-600 text-xs font-medium">
+                          In Stock
+                        </span>
+                      ) : (
+                        <span className="text-red-500 text-xs font-medium">
+                          Out of Stock
+                        </span>
+                      )}
+                    </div>
+                    {product.stock === 0 && (
+                      <span className="text-xs text-red-500 font-medium">Out of stock</span>
+                    )}
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </PageContainer>

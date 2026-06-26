@@ -117,10 +117,18 @@ const createProduct = async (req, res) => {
     }
 
     // If finalPrice is not provided, compute it from price and discount
-    if (productData.finalPrice === undefined && productData.price !== undefined) {
-      const discount = productData.discount || 0;
-      productData.finalPrice = Math.round(productData.price * (1 - discount / 100));
-    }
+  const sellingPrice = Number(productData.price || 0);
+const discount = Number(productData.discount || 0);
+
+productData.finalPrice = sellingPrice;
+
+if (discount > 0) {
+  productData.price = Math.round(
+    sellingPrice / (1 - discount / 100)
+  );
+} else {
+  productData.price = sellingPrice;
+}
 
     const product = await Product.create(productData);
     res.status(201).json({ success: true, message: 'Product created!', product });
@@ -164,7 +172,15 @@ const updateProduct = async (req, res) => {
       : existingProduct.discount;
 
     // --- Recalculate finalPrice (always) ---
-    productData.finalPrice = Math.round(price * (1 - discount / 100));
+   productData.finalPrice = price;
+
+if (discount > 0) {
+  productData.price = Math.round(
+    price / (1 - discount / 100)
+  );
+} else {
+  productData.price = price;
+}
 
     console.log(`🔄 Price: ${price}, Discount: ${discount}% → Final: ${productData.finalPrice}`);
 

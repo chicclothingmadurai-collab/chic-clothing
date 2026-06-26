@@ -192,9 +192,25 @@ export default function HomePage() {
                   <p className="text-stone-400 text-xs mt-1">
                     {product.brand || "CHIC"}
                   </p>
-                  <p className="font-semibold text-base mt-2 text-stone-900">
-                    ₹{product.finalPrice || product.price}
-                  </p>
+                  <div className="mt-2">
+  <div className="flex items-center gap-2">
+    <span className="font-bold text-lg text-stone-900">
+      ₹{product.finalPrice || product.price}
+    </span>
+
+    {product.discount > 0 && (
+      <span className="text-green-600 text-xs font-semibold">
+        {product.discount}% OFF
+      </span>
+    )}
+  </div>
+
+  {product.discount > 0 && (
+    <p className="line-through text-stone-400 text-sm">
+      ₹{product.price}
+    </p>
+  )}
+</div>
                 </div>
               </Link>
             </div>
