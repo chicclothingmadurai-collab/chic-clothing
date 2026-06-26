@@ -1,8 +1,3 @@
-const sendEmail = require("../utils/sendEmail");
-const Order = require("../models/Order");
-const { Cart } = require("../models");
-const Product = require("../models/Product");
-const User = require("../models/User");
 
 // ---------- ADMIN EMAIL RECIPIENTS ----------
 
